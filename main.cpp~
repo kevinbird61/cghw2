@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
 		rot2 =  glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
 		rev = glm::translate(glm::mat4(),glm::vec3(15.0f,0.0f,0.0f));
 		// Setting the earth's revolution
-		setUniformMat4(program2, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot2*rev);
+		//setUniformMat4(program2, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot2*rev);
 		
 		std::cout<<"cos: "<<cos(glfwGetTime())<<";sin: "<< sin(glfwGetTime())<<std::endl;
 
