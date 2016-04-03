@@ -23,7 +23,7 @@ struct object_struct{
 } ;
 
 std::vector<object_struct> objects;//vertex array object,vertex buffer object and texture(color) for objs
-unsigned int program, program2;
+unsigned int program, program2,program3;
 std::vector<int> indicesCount;//Number of indice of objs
 
 static void error_callback(int error, const char* description)
@@ -179,13 +179,11 @@ static int add_obj(unsigned int program, const char *filename,const char *texbmp
 
 	// Upload postion array
 	glBindBuffer(GL_ARRAY_BUFFER, new_node.vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*shapes[0].mesh.positions.size(),
-			shapes[0].mesh.positions.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*shapes[0].mesh.positions.size(),shapes[0].mesh.positions.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	if(shapes[0].mesh.texcoords.size()>0)
 	{
-
 		// Upload texCoord array
 		glBindBuffer(GL_ARRAY_BUFFER, new_node.vbo[1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*shapes[0].mesh.texcoords.size(),
@@ -209,17 +207,14 @@ static int add_obj(unsigned int program, const char *filename,const char *texbmp
 	{
 		// Upload normal array
 		glBindBuffer(GL_ARRAY_BUFFER, new_node.vbo[2]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*shapes[0].mesh.normals.size(),
-				shapes[0].mesh.normals.data(), GL_STATIC_DRAW);
-
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*shapes[0].mesh.normals.size(),shapes[0].mesh.normals.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
 	// Setup index buffer for glDrawElements
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, new_node.vbo[3]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*shapes[0].mesh.indices.size(),
-			shapes[0].mesh.indices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*shapes[0].mesh.indices.size(),shapes[0].mesh.indices.data(), GL_STATIC_DRAW);
 
 	indicesCount.push_back(shapes[0].mesh.indices.size());
 
@@ -279,7 +274,9 @@ int main(int argc, char *argv[])
 	// For Mac OS X
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	window = glfwCreateWindow(800, 600, "Simple Example", NULL, NULL);
+	int width = 1366;
+	int height = 768;
+	window = glfwCreateWindow(width, height, "Simple Example", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -300,37 +297,71 @@ int main(int argc, char *argv[])
 
 	// load shader program
 	program = setup_shader(readfile("vs.txt").c_str(), readfile("fs.txt").c_str());
-	program2 = setup_shader(readfile("vs.txt").c_str(), readfile("fs.txt").c_str());
+	program2 = setup_shader(readfile("vs2.txt").c_str(), readfile("fs.txt").c_str());
+	program3 = setup_shader(readfile("vs.txt").c_str() , readfile("fs.txt").c_str());
 
 	int sun = add_obj(program, "sun.obj","sun.bmp");
-	int earth = add_obj(program, "earth.obj","earth.bmp");
+	int earth = add_obj(program2, "earth.obj","earth.bmp");
+	int moon = add_obj(program3 , "earth.obj" , "moon.bmp");
 
 	glEnable(GL_DEPTH_TEST);
-	 glCullFace(GL_BACK);
+	glCullFace(GL_BACK);
 	// Enable blend mode for billboard
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	setUniformMat4(program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*
-			glm::lookAt(glm::vec3(20.0f), glm::vec3(), glm::vec3(0, 1, 0))*glm::mat4(1.0f));
-	setUniformMat4(program2, "vp", glm::mat4(1.0));
-	glm::mat4 tl=glm::translate(glm::mat4(),glm::vec3(15.0f,0.0f,0.0));
-	glm::mat4 rot;
-	glm::mat4 rev;
+	glm::mat4 tl=glm::translate(glm::mat4(),glm::vec3(15.0f,0.0f,0.0)),tl2;
+	glm::mat4 rot,rot2,rot3;
+	glm::mat4 rev,rev2;
+	glm::mat4 scale;
+
+	setUniformMat4(program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(20.0f), glm::vec3(), glm::vec3(0, 1, 0))*glm::mat4(1.0f));
+	
 
 	float last, start;
 	last = start = glfwGetTime();
 	int fps=0;
 	objects[sun].model = glm::scale(glm::mat4(1.0f), glm::vec3(0.85f));
+	/* For elliptical path :OpenGL */
+	float angle_cam = 20.0f;
 	while (!glfwWindowShouldClose(window))
 	{//program will keep draw here until you close the window
 		float delta = glfwGetTime() - start;
 		render();
+		// Require for the rotation of sun
+		glm::mat4 rot =  glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+		// Setting the sun's rotation
+		setUniformMat4(program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot);
+		// Require for the rotation of earth
+		rot2 =  glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
+		rev = glm::translate(glm::mat4(),glm::vec3(15.0f,0.0f,0.0f));
+		// Setting the earth's revolution
+		setUniformMat4(program2, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot2*rev);
+		
+		std::cout<<"cos: "<<cos(glfwGetTime())<<";sin: "<< sin(glfwGetTime())<<std::endl;
+		
+		// Require for the rotation of earth
+		// tl2=glm::translate(glm::mat4(1.0f),glm::vec3(0.0f,0.0f,0.0f));
+		float x = 15.0f;
+		x = x+x*cos(glfwGetTime());
+		float y = 0.0f;
+		y = y+y*sin(glfwGetTime());
+		tl=glm::translate(glm::mat4(1.0f),glm::vec3(x,y,0.0f));
+		rot3 =  glm::rotate(glm::mat4(), (GLfloat)(glfwGetTime())*0.7f, glm::vec3(0.0f, 0.0f, 1.0f));
+		rev2 = glm::translate(glm::mat4(1.0f),glm::vec3(15.0f,3.0f,0.0f));
+		scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+		// Moon 
+		setUniformMat4(program3, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*(glm::mat4(1.0f)*tl*rot3*scale));
+		
+		
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		fps++;
+		
 		if(glfwGetTime() - last > 1.0)
 		{
+			// Every second
 			std::cout<<(double)fps/(glfwGetTime()-last)<<std::endl;
 			fps = 0;
 			last = glfwGetTime();

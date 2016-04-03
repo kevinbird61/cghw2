@@ -21,6 +21,9 @@ OBJS := \
 
 $(EXEC): $(OBJS)
 	$(CXX) -o $@ $^ $(LFLAGS)
+	
+run:
+	./$(EXEC)
 
 clean:
 	rm -rf $(OBJS) $(EXEC)
