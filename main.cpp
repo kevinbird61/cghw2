@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
 		setUniformMat4(program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot);
 		// Require for the rotation of earth
 		rot2 =  glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
-		rev = glm::translate(glm::mat4(),glm::vec3(15.0f*cos(glfwGetTime()),8.0f*sin(glfwGetTime()),0.0f));
+		rev = glm::translate(glm::mat4(),glm::vec3(15.0f,0.0f,0.0f));
 		// Setting the earth's revolution
 		setUniformMat4(program2, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot2*rev);
 		
@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 
 		// Moon
 		rot3 =  glm::rotate(glm::mat4(), (GLfloat)(glfwGetTime())*0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
-		glm::mat4 rev_earth = glm::translate(glm::mat4(1.0f),glm::vec3(5.0f*cos(glfwGetTime()),5.0f*sin(glfwGetTime()),0.0f));
+		glm::mat4 rev_earth = glm::translate(glm::mat4(1.0f),glm::vec3(8.0f*cos(glfwGetTime()),5.0f*sin(glfwGetTime()),0.0f));
 		scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 		setUniformMat4(program3, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*(glm::mat4(1.0f)*rot3*rev*scale*rev_earth));
 		
