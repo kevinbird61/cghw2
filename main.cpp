@@ -259,15 +259,19 @@ static void render(const glm::mat4 rev_earth_to_sun,const glm::mat4 rev_moon_to_
 		//you should send some data to shader here
 		switch (i){
 			case 0:
-				setUniformMat4(objects[i].program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot_sun*objects[i].model);	
+				setUniformMat4(objects[i].program, "vp", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rot_sun);	
+				setUniformMat4(objects[i].program, "model", objects[i].model);	
 				break;
 			case 1:
-				setUniformMat4(objects[i].program, "vp2", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*rev_earth_to_sun*rot_earth);
+				setUniformMat4(objects[i].program, "vp2", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1)));
+				setUniformMat4(objects[i].program, "model", objects[i].model);	
 				objects[i].model = rev_earth_to_sun*rot_earth;
 				break;
 			case 2:
 				glm::mat4 V_scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-				setUniformMat4(program3, "vp3", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1))*(objects[1].model*rot_moon*V_scale*rev_moon_to_earth));
+				setUniformMat4(program3, "vp3", glm::perspective(glm::radians(45.0f), 640.0f/480, 1.0f, 100.f)*glm::lookAt(glm::vec3(angle_cam), glm::vec3(), glm::vec3(0, 0, 1)));
+				setUniformMat4(objects[i].program, "model", objects[i].model );
+				objects[i].model = objects[1].model*rot_moon*V_scale*rev_moon_to_earth;
 				break;
 		}
 		
