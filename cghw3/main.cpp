@@ -12,7 +12,6 @@
 
 #define GLM_FORCE_RADIANS
 
-
 struct object_struct{
 	unsigned int program;
 	unsigned int vao;
@@ -26,15 +25,8 @@ std::vector<object_struct> objects;//vertex array object,vertex buffer object an
 unsigned int program;
 std::vector<int> indicesCount;//Number of indice of objs
 
-static void error_callback(int error, const char* description)
-{
-	fputs(description, stderr);
-}
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
-}
+static void error_callback(int error, const char* description);
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 static unsigned int setup_shader(const char *vertex_shader, const char *fragment_shader)
 {
@@ -257,10 +249,42 @@ static void render()
 		glBindVertexArray(objects[i].vao);
 		glBindTexture(GL_TEXTURE_2D, objects[i].texture);
 		//you should send some data to shader here
-		
 		glDrawElements(GL_TRIANGLES, indicesCount[i], GL_UNSIGNED_INT, nullptr);
 	}
 	glBindVertexArray(0);
+}
+
+static void setVS(unsigned int program , const glm::mat4 projection , const glm::mat4 view , const glm::mat4 model)
+{
+	setUniformMat4(program,"projection",projection);
+	setUniformMat4(program,"vp",view);
+	setUniformMat4(program,"model",model);
+}
+
+static void setColorAttr(unsigned int program , const glm::vec3 LightPos , const glm::vec3 camera)
+{
+	// fetch and set light color
+	GLint lightColorLoc = glGetUniformLocation(program,"lightColor");
+	glUniform3f(lightColorLoc, 1.0f,1.0f,1.0f);
+	// fetch and set light positions
+	GLint lightPosLoc = glGetUniformLocation(program,"lightPos");
+	glUniform3f(lightPosLoc , LightPos.x , LightPos.y , LightPos.z);
+	// Set view 
+	GLint viewPosLoc = glGetUniformLocation(program,"viewPos");
+	glUniform3f(viewPosLoc , camera.x , camera.y , camera.z);
+}
+
+static void loadShader(const char* vs_path , const char* fs_path)
+{
+	// Need to delete the previous shader program 
+	glDeleteProgram(program);
+	
+	program = setup_shader(readfile(vs_path).c_str(), readfile(fs_path).c_str());
+
+	int sun = add_obj(program, "sun.obj","sun.bmp");
+	
+	glEnable(GL_DEPTH_TEST);
+	glCullFace(GL_BACK);
 }
 
 int main(int argc, char *argv[])
@@ -296,13 +320,8 @@ int main(int argc, char *argv[])
 	// Setup input callback
 	glfwSetKeyCallback(window, key_callback);
 
-	// load shader program
-	program = setup_shader(readfile("vertexShader.vs").c_str(), readfile("fragmentShader.frag").c_str());
-
-	int sun = add_obj(program, "sun.obj","sun.bmp");
-	
-	glEnable(GL_DEPTH_TEST);
-	glCullFace(GL_BACK);
+	// load shader program - default is flat
+	loadShader("Shader/flat_vertexShader.vs","Shader/flat_fragmentShader.frag");
 	// Enable blend mode for billboard
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -310,9 +329,13 @@ int main(int argc, char *argv[])
 	float last, start;
 	last = start = glfwGetTime();
 	int fps=0;
-	objects[sun].model = glm::scale(glm::mat4(1.0f), glm::vec3(0.85f));
-
-	setUniformMat4(program, "vp", glm::perspective(glm::radians(45.0f), 640.0f / 480, 1.0f, 100.f) *glm::lookAt(glm::vec3(20.0f), glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f));
+	//objects[sun].model = glm::scale(glm::mat4(1.0f), glm::vec3(0.85f));
+	
+	std::cout<<"You can press the Key 1~4 to control the shader mode!"<<std::endl;
+	std::cout<<"1 for flat"<<std::endl;
+	std::cout<<"2 for Gouraud"<<std::endl;
+	std::cout<<"3 for Phong"<<std::endl;
+	std::cout<<"4 for Blinn-Phong"<<std::endl;
 	
 	while (!glfwWindowShouldClose(window))
 	{//program will keep draw here until you close the window
@@ -323,10 +346,25 @@ int main(int argc, char *argv[])
 		glfwPollEvents();
 		fps++;
 		
+		glm::vec3 camera = glm::vec3( 30.0f , 30.0f , 30.0f);
+		
+		// set matrix
+		//glm::mat4 proj = glm::perspective(glm::radians(20.0f), 640.0f / 480, 1.0f, 100.f)*glm::lookAt(glm::vec3(25.0f), glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f);
+		glm::mat4 proj = glm::perspective(glm::radians(20.0f), 640.0f / 480, 1.0f, 100.f)*glm::lookAt(camera, glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.85f))*glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+		
+		// Light Position
+		glm::vec3 LightPos(5.0f,15.0f,5.0f);
+		setColorAttr(program , LightPos , camera);
+		
+		// Set program
+		setVS(program,proj,view,model);
+		
 		if(glfwGetTime() - last > 1.0)
 		{
 			// Every second
-			std::cout<<(double)fps/(glfwGetTime()-last)<<std::endl;
+			// std::cout<<(double)fps/(glfwGetTime()-last)<<std::endl;
 			fps = 0;
 			last = glfwGetTime();
 		}
@@ -336,4 +374,23 @@ int main(int argc, char *argv[])
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return EXIT_SUCCESS;
+}
+
+static void error_callback(int error, const char* description)
+{
+	fputs(description, stderr);
+}
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	// do the change for different shader
+	else if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+		loadShader("Shader/flat_vertexShader.vs","Shader/flat_fragmentShader.frag");
+	else if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+		loadShader("Shader/gourand_vertexShader.vs","Shader/gourand_fragmentShader.frag");
+	else if (key == GLFW_KEY_3 && action == GLFW_PRESS)
+		loadShader("Shader/vertexShader.vs","Shader/fragmentShader.frag");
+	else if (key == GLFW_KEY_4 && action == GLFW_PRESS)
+		loadShader("Shader/Blinn_vertexShader.vs","Shader/Blinn_fragmentShader.frag");
 }

@@ -4,10 +4,9 @@
 // If you create framebuffer your own, you need to take care of it
 layout(location=0) out vec4 color;
 
-in vec2 fTexcoord;
-uniform sampler2D uSampler;
+flat in vec4 Color;
 
 void main()
-{
-	color=texture( uSampler,fTexcoord);
+{	
+	color = Color;
 }

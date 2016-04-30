@@ -1,4 +1,4 @@
-EXEC = HW2
+EXEC = HW3
 .PHONY: all
 all: $(EXEC)
 
@@ -26,4 +26,4 @@ run:
 	./$(EXEC)
 
 clean:
-	rm -rf $(OBJS) $(EXEC)
+	rm -rf $(OBJS) $(EXEC) *~

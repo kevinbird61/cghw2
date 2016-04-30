@@ -13,10 +13,14 @@ uniform mat4 projection;
 // 'out' means vertex shader output for fragment shader
 // fNormal will be interpolated before passing to fragment shader
 out vec2 fTexcoord;
+out vec3 Normal;
+out vec3 FragPos;
 
 void main()
 {
 	fTexcoord=texcoord;
 	
-	gl_Position=vp*vec4(position, 1.0);
+	gl_Position=projection*vp*model*vec4(position, 1.0);
+	FragPos = vec3(model*vec4(position , 1.0f));
+	Normal = mat3(transpose(inverse(model)))*normal;
 }
