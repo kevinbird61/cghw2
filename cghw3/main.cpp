@@ -319,7 +319,8 @@ int main(int argc, char *argv[])
 
 	// Setup input callback
 	glfwSetKeyCallback(window, key_callback);
-
+	
+	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 	// load shader program - default is flat
 	loadShader("Shader/flat_vertexShader.vs","Shader/flat_fragmentShader.frag");
 	// Enable blend mode for billboard
@@ -350,8 +351,8 @@ int main(int argc, char *argv[])
 		
 		// set matrix
 		//glm::mat4 proj = glm::perspective(glm::radians(20.0f), 640.0f / 480, 1.0f, 100.f)*glm::lookAt(glm::vec3(25.0f), glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f);
-		glm::mat4 proj = glm::perspective(glm::radians(20.0f), 640.0f / 480, 1.0f, 100.f)*glm::lookAt(camera, glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 proj = glm::perspective(glm::radians(20.0f), 640.0f / 480, 1.0f, 100.f);
+		glm::mat4 view = glm::mat4(1.0f)*glm::lookAt(camera, glm::vec3(), glm::vec3(0, 1, 0)) * glm::mat4(1.0f);
 		glm::mat4 model = glm::scale(glm::mat4(1.0f), glm::vec3(0.85f))*glm::rotate(glm::mat4(), (GLfloat)glfwGetTime() * 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		// Light Position

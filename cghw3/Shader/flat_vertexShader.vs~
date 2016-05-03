@@ -18,7 +18,7 @@ uniform vec3 lightColor;
 // 'out' means vertex shader output for fragment shader
 // fNormal will be interpolated before passing to fragment shader
 flat out vec3 Result;
-out vec2 ftexcoord;
+flat out vec2 ftexcoord;
 
 void main()
 {

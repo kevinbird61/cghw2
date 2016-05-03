@@ -7,7 +7,7 @@ layout(location=0) out vec4 color;
 uniform sampler2D uSampler;
 
 flat in vec3 Result;
-in vec2 ftexcoord;
+flat in vec2 ftexcoord;
 
 void main()
 {	
